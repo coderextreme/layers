@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>X3DOM View</title>
+  <title>X3DOM Layered View</title>
   <link rel="stylesheet" href="https://www.x3dom.org/download/dev/x3dom.css">
   <script src="https://www.x3dom.org/download/dev/x3dom.js"></script>
   <style>
@@ -14,22 +14,53 @@
       overflow: hidden;
       background: #000;
     }
-    x3d {
+
+    .container {
+      position: relative;
       width: 100%;
       height: 100%;
+    }
+
+    /* Base 3D Scene (Layer 0) */
+    #x3dLayer0 {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
       border: none;
+    }
+
+    /* HUD Overlay Scene (Layer 1) */
+    #x3dLayer1 {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      border: none;
+      background: transparent !important;
+      pointer-events: none; /* Let all mouse/touch events pass to the 3D scene */
+    }
+
+    /* Ensure X3DOM generated canvas in Layer 1 remains transparent */
+    #x3dLayer1 canvas {
+      background: transparent !important;
+      pointer-events: none;
     }
   </style>
 </head>
 <body>
-  <x3d id="x3domCanvas" showStat="false" showLog="false">
-    <scene>
-      <background skyColor="0.1 0.1 0.15"></background>
-      <navigationInfo type='"EXAMINE" "ANY"' headlight="true"></navigationInfo>
-      <viewpoint id="VP_X3DOM" position="0 0 8" description="MainVP"></viewpoint>
+  <div class="container">
+    <!-- Layer 0: Navigable 3D Scene -->
+    <x3d id="x3dLayer0" showStat="false" showLog="false">
+      <scene>
+        <background skyColor="0.1 0.1 0.15"></background>
+        <navigationInfo type='"EXAMINE" "ANY"' headlight="true"></navigationInfo>
+        <viewpoint id="VP_X3DOM" position="0 0 8" description="MainVP"></viewpoint>
 
-      <!-- Normalized Layer 0: Box -->
-      <group id="EmulatedLayer0">
         <transform DEF="BoxGeom" translation="0 0 0">
           <shape>
             <appearance>
@@ -38,10 +69,17 @@
             <box size="1.5 1.5 1.5"></box>
           </shape>
         </transform>
-      </group>
+      </scene>
+    </x3d>
 
-      <!-- Normalized Layer 1: Text positioned identically on top of Box -->
-      <group id="EmulatedLayer1">
+    <!-- Layer 1: Fixed HUD Overlay -->
+    <x3d id="x3dLayer1" showStat="false" showLog="false">
+      <scene>
+        <!-- Fixed camera: navigation disabled so the HUD stays locked in place -->
+        <navigationInfo type='"NONE"' headlight="true"></navigationInfo>
+        <viewpoint position="0 0 8" description="HUD_VP"></viewpoint>
+
+        <!-- Positioned identically to Layer 1 in X_ITE -->
         <transform translation="0 0 0.8">
           <shape>
             <appearance>
@@ -52,12 +90,32 @@
             </text>
           </shape>
         </transform>
-      </group>
-    </scene>
-  </x3d>
+      </scene>
+    </x3d>
+  </div>
 
   <script>
-    // Camera sync listener from parent window
+    function parseOrientation(ori) {
+      if (typeof ori === "string") return ori;
+      if (Array.isArray(ori)) {
+        if (ori[0] && typeof ori[0] === "object" && "x" in ori[0]) {
+          return `${ori[0].x} ${ori[0].y} ${ori[0].z} ${ori[1]}`;
+        }
+        if (ori.length === 4) return ori.join(" ");
+      }
+      return "0 0 1 0";
+    }
+
+    function parsePosition(pos) {
+      if (typeof pos === "string") return pos;
+      if (pos && typeof pos === "object" && "x" in pos) {
+        return `${pos.x} ${pos.y} ${pos.z}`;
+      }
+      if (Array.isArray(pos)) return pos.join(" ");
+      return "0 0 8";
+    }
+
+    // Receive viewpoint synchronization from X_ITE
     window.addEventListener("message", (e) => {
       if (e.data && e.data.type === "VIEWPOINT_UPDATE") {
         const vp = document.getElementById("VP_X3DOM");
@@ -68,18 +126,30 @@
       }
     });
 
-    // Broadcast camera motion when manipulated in X3DOM
+    // Send viewpoint changes to X_ITE
     document.addEventListener("DOMContentLoaded", () => {
-      const canvas = document.getElementById("x3domCanvas");
-      if (canvas) {
-        canvas.addEventListener("viewpointChanged", (evt) => {
-          window.parent.postMessage({
-            type: "VIEWPOINT_UPDATE",
-            position: `${evt.position.x} ${evt.position.y} ${evt.position.z}`,
-            orientation: `${evt.orientation[0]} ${evt.orientation[1]} ${evt.orientation[2]} ${evt.orientation[3]}`
-          }, "*");
-        });
+      const canvas0 = document.getElementById("x3dLayer0");
+      const vp = document.getElementById("VP_X3DOM");
+      let lastPos = "", lastOri = "";
+
+      function onCamMotion(evt) {
+        if (!evt || !evt.position || !evt.orientation) return;
+        const posStr = parsePosition(evt.position);
+        const oriStr = parseOrientation(evt.orientation);
+
+        if (posStr === lastPos && oriStr === lastOri) return;
+        lastPos = posStr;
+        lastOri = oriStr;
+
+        window.parent.postMessage({
+          type: "VIEWPOINT_UPDATE",
+          position: posStr,
+          orientation: oriStr
+        }, "*");
       }
+
+      if (canvas0) canvas0.addEventListener("viewpointChanged", onCamMotion);
+      if (vp) vp.addEventListener("viewpointChanged", onCamMotion);
     });
   </script>
 </body>
