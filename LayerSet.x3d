@@ -24,14 +24,14 @@
           </Shape>
         </Transform>
       </Layer>
-      <Layer  pickable="FALSE" pointerEvents="FALSE" DEF="Text_Layer">
+      <Layer  pickable="false" DEF="Text_Layer">
         <Viewpoint description="Text View" position="0 0 7" />
           <Transform translation="2 0 0">
             <Shape>
               <Appearance>
                 <Material DEF="TextMaterial" diffuseColor="0 1 0"/>
               </Appearance>
-              <Text  size="0.1" string='"Hello, Layers" "" "Goodbye, World"'>
+              <Text  string='"Hello, Layers" "" "Goodbye, World"'>
                 <FontStyle justify='"MIDDLE" "MIDDLE"'>
                 </FontStyle>
               </Text>
