@@ -3,12 +3,11 @@
 <X3D profile='Immersive' version='4.0' xmlns:xsd='http://www.w3.org/2001/XMLSchema-instance' xsd:noNamespaceSchemaLocation='https://www.web3d.org/specifications/x3d-4.0.xsd'>
   <head>
     <component name="Grouping" level="1" />
-    <component name="Layering" level="1" />
+    <component name="EnvironmentalSensor" level="1" />
     <component name="Text" level="1" />
-    <meta name="title" content="LayerSet.x3d" />
-    <meta name="identifier" content="https://coderextreme.net/X3DJSONLD/src/main/data/LayerSet.x3d" />
-    <meta name="description" content="LayerSet with a 3D layer of a rotating box and a 2D layer of a Text string saying &quot; Hello, Layers&quot; and &quot;Goodbye, World&quot;" />
-    <meta name="created" content="10 October 2026" />
+    <meta name="title" content="LayerSetProximity.x3d" />
+    <meta name="description" content="A ProximitySensor keeps the Text locked in front of the viewer, centered over the Box. Mouse or trackpad navigation rotates the Box; the Text does not rotate." />
+    <meta name="created" content="27 October 2026" />
     <meta name="creator" content="John Carlson" />
   </head>
   <Scene>
@@ -52,5 +51,5 @@
             </Transform>
           </Layer>
         </LayerSet>
-      </Scene>
+  </Scene>
 </X3D>

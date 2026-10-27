@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE X3D PUBLIC "ISO//Web3D//DTD X3D 4.0//EN" "https://www.web3d.org/specifications/x3d-4.0.dtd">
+<X3D profile='Immersive' version='4.0' xmlns:xsd='http://www.w3.org/2001/XMLSchema-instance' xsd:noNamespaceSchemaLocation='https://www.web3d.org/specifications/x3d-4.0.xsd'>
+  <head>
+    <component name="Grouping" level="1" />
+    <component name="EnvironmentalSensor" level="1" />
+    <component name="Text" level="1" />
+    <meta name="title" content="LayerSetProximity.x3d" />
+    <meta name="description" content="A ProximitySensor keeps the Text locked in front of the viewer, centered over the Box. Mouse or trackpad navigation rotates the Box; the Text does not rotate." />
+    <meta name="created" content="27 October 2026" />
+    <meta name="creator" content="John Carlson" />
+  </head>
+  <Scene>
+    <Background skyColor="0.1 0.1 0.15"></Background>
+    <NavigationInfo type='"EXAMINE" "ANY"' headlight="true"></NavigationInfo>
+    <Viewpoint DEF="Viewpoint" position="0 0 8" description="MainVP"></Viewpoint>
+
+    <!-- Tracks the viewer's position and orientation; huge size so the viewer is always inside -->
+    <ProximitySensor DEF="ViewerSensor" center="0 0 0" size="10000 10000 10000"></ProximitySensor>
+
+    <!-- The Box lives in the world at the origin. Examine-mode dragging orbits the
+         camera around it, so the Box appears to rotate with the mouse/trackpad. -->
+    <Transform DEF="BoxGeom" translation="0 0 0">
+      <Shape>
+        <Appearance>
+          <Material diffuseColor="0.2 0.7 0.9"></Material>
+        </Appearance>
+        <Box size="1.5 1.5 1.5"></Box>
+      </Shape>
+    </Transform>
+
+    <!-- The Text follows the viewer's position AND orientation, so it never rotates
+         on screen. The inner offset parks it on the view axis only 0.5 units in front of
+         the camera, so it is nearer than any part of the Box (even a rotated corner) and
+         stays in front when zooming. The 0.0735 scale (= 0.5 / 6.8) keeps its apparent
+         size the same as when it sat 6.8 units away. -->
+    <Transform DEF="TextFollower">
+      <Transform translation="0 0 -0.5" scale="0.0735 0.0735 0.0735">
+        <Shape>
+          <Appearance>
+            <Material diffuseColor="1 1 1" emissiveColor="1 1 1"></Material>
+          </Appearance>
+          <Text string='"Layer 1" "Overlay Text"' solid="false">
+            <FontStyle
+              family='"Arial" "Helvetica" "SANS"'
+              style="PLAIN"
+              spacing="0.95"
+              justify='"MIDDLE" "MIDDLE"'
+              size="0.45">
+            </FontStyle>
+          </Text>
+        </Shape>
+      </Transform>
+    </Transform>
+
+    <ROUTE fromNode="ViewerSensor" fromField="position_changed" toNode="TextFollower" toField="set_translation"></ROUTE>
+    <ROUTE fromNode="ViewerSensor" fromField="orientation_changed" toNode="TextFollower" toField="set_rotation"></ROUTE>
+  </Scene>
+</X3D>

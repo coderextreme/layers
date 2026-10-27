@@ -1,15 +1,54 @@
 // --- START OF FILE app.js ---
 
 var port = process.env.PORT || 3000;
+var httpsPort = process.env.HTTPS_PORT || 3443;
 
 import { dirname } from 'path';
 import path from 'path';
+import os from 'os';
 import express from 'express';
 import fs from 'fs';
 import http from 'http';
+import https from 'https';
+import { execFileSync } from 'child_process';
 import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Certificates live OUTSIDE __dirname on purpose: express.static(__dirname)
+// below would otherwise serve key.pem to anyone who asks for it.
+const certDir = process.env.CERT_DIR || path.join(os.homedir(), '.x3d-dev-certs');
+const keyFile = path.join(certDir, 'key.pem');
+const certFile = path.join(certDir, 'cert.pem');
+
+function ensureSelfSignedCert() {
+	if (fs.existsSync(keyFile) && fs.existsSync(certFile)) {
+		return true;
+	}
+	try {
+		fs.mkdirSync(certDir, { recursive: true });
+		console.log("Generating self-signed certificate in", certDir);
+		execFileSync("openssl", [
+			"req", "-x509",
+			"-newkey", "rsa:2048",
+			"-nodes",
+			"-keyout", keyFile,
+			"-out", certFile,
+			"-days", "365",
+			"-subj", "/CN=localhost",
+			"-addext", "subjectAltName=DNS:localhost,IP:127.0.0.1"
+		], {
+			stdio: "inherit",
+			// keep MSYS2 from mangling the "/CN=..." argument
+			env: { ...process.env, MSYS2_ARG_CONV_EXCL: "*", MSYS_NO_PATHCONV: "1" }
+		});
+		try { fs.chmodSync(keyFile, 0o600); } catch (e) { /* ignore on Windows */ }
+		return true;
+	} catch (e) {
+		console.error("Could not generate certificate (is openssl installed and on PATH?)", e.message);
+		return false;
+	}
+}
 
 
 var app = express();
@@ -46,13 +85,7 @@ function magic(path, type) {
 		}
 		console.log(req.ip+":  Requested", url);
 		var wind = url.indexOf("www.web3d.org");
-		if (wind >= 0) {
-			url = url.substring(wind);
-			var cwind = config.examples().indexOf("www.web3d.org");
-			url = config.examples().substr(0, cwind) + url;
-		} else {
-			url = __dirname+"/"+ url;
-		}
+		url = __dirname+"/"+ url;
 		if (fs.existsSync(url)) {
 			console.log("Reading", url);
 			var data = await fs.promises.readFile(url);
@@ -77,6 +110,7 @@ magic(/.*\.x3dv$/i, "model/x3d+vrml");
 magic(/.*\.css$/i, "text/css");
 magic(/.*\.js$/i, "text/javascript");
 
+// --- HTTP (unchanged) ---
 const server = http.createServer(app);
 
 server.listen(port, '127.0.0.1', function () {
@@ -88,3 +122,21 @@ server.listen(port, '127.0.0.1', function () {
   console.log("Go to file://"+process.env.HOME+"/layers/x3dom.html");
   console.log("Go to file://"+process.env.HOME+"/layers/x_ite.html");
 });
+
+// --- HTTPS (self-signed) ---
+if (ensureSelfSignedCert()) {
+	const options = {
+		key: fs.readFileSync(keyFile),
+		cert: fs.readFileSync(certFile)
+	};
+	const secureServer = https.createServer(options, app);
+	secureServer.listen(httpsPort, '127.0.0.1', function () {
+		console.log('HTTPS app listening on port', httpsPort, "!");
+		console.log("Go to https://127.0.0.1:"+httpsPort+"/index.html");
+		console.log("Go to https://127.0.0.1:"+httpsPort+"/x3dom.html");
+		console.log("Go to https://127.0.0.1:"+httpsPort+"/x_ite.html");
+		console.log("(Your browser will warn about the self-signed certificate; that's expected.)");
+	});
+} else {
+	console.error("HTTPS disabled: no certificate available.");
+}
