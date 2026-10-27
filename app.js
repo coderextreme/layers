@@ -75,6 +75,8 @@ function magic(path, type) {
 magic(/.*\.html$/i, "text/html");
 magic(/.*\.x3d$/i, "model/x3d+xml");
 magic(/.*\.x3dv$/i, "model/x3d+vrml");
+magic(/.*\.css$/i, "text/css");
+magic(/.*\.js$/i, "text/javascript");
 
 const server = http.createServer(app);
 
