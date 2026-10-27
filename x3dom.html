@@ -3,11 +3,6 @@
 <head>
   <meta charset="utf-8">
   <title>X3DOM Layered View</title>
-  
-  <!-- Reliable, preloaded PT Sans webfont -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="https://andreasplesch.github.io/x3dom/dist/x3dom.css">
   <script src="https://andreasplesch.github.io/x3dom/dist/x3dom-full.debug.js"></script>
@@ -20,11 +15,10 @@
         const fs = match ? parseFloat(match[1]) : 32;
 
         this.save();
-        // 1. Force the canvas context to strictly use PT Sans (removes Segoe UI's base on '1')
-        this.font = `normal ${fs}px "PT Sans", sans-serif`;
+        this.font = `normal ${fs}px Arial, Helvetica, sans-serif`;
 
-        // 2. Subtle stem dilation to match X_ITE's geometric mesh weight
-        this.lineWidth = fs * 0.030;
+        // Slight stroke to give 2D canvas text the body matching X_ITE's rendered text
+        this.lineWidth = fs * 0.025;
         this.strokeStyle = this.fillStyle;
         this.lineJoin = 'miter';
         this.miterLimit = 2;
@@ -49,7 +43,7 @@
       height: 100%;
       overflow: hidden;
       background: #000;
-      font-family: 'PT Sans', sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
     }
 
     .container {
@@ -116,15 +110,15 @@
         <navigationInfo type='"NONE"' headlight="true"></navigationInfo>
         <viewpoint position="0 0 8" description="HUD_VP"></viewpoint>
 
-        <transform translation="0 0 0.8">
+        <!-- translation="0 0.05 0.8" perfectly matches X_ITE's vertical position -->
+        <transform translation="0 0.05 0.8">
           <shape>
             <appearance>
               <material diffuseColor="1 1 1" emissiveColor="1 1 1"></material>
             </appearance>
             <text id="hudText" string='"Layer 1" "Overlay Text"' solid="false">
-              <!-- spacing="0.94" gives clean vertical clearance between 'y' and 'l' -->
               <fontStyle 
-                family='"PT Sans"' 
+                family='"Arial" "Helvetica" "SANS"' 
                 style="PLAIN" 
                 quality="2" 
                 spacing="0.94" 
@@ -139,18 +133,6 @@
   </div>
 
   <script>
-    // Refresh the text node as soon as the Google Font is confirmed ready in memory
-    document.fonts.ready.then(() => {
-      const textNode = document.getElementById("hudText");
-      if (textNode) {
-        const str = textNode.getAttribute("string");
-        textNode.setAttribute("string", '""');
-        requestAnimationFrame(() => {
-          textNode.setAttribute("string", str);
-        });
-      }
-    });
-
     function parseOrientation(ori) {
       if (typeof ori === "string") return ori;
       if (Array.isArray(ori)) {
@@ -171,12 +153,18 @@
       return "0 0 8";
     }
 
+    let isInternalUpdate = false;
+
     window.addEventListener("message", (e) => {
       if (e.data && e.data.type === "VIEWPOINT_UPDATE") {
         const vp = document.getElementById("VP_X3DOM");
         if (vp) {
+          isInternalUpdate = true;
           vp.setAttribute("position", e.data.position);
           vp.setAttribute("orientation", e.data.orientation);
+          requestAnimationFrame(() => {
+            isInternalUpdate = false;
+          });
         }
       }
     });
@@ -187,6 +175,7 @@
       let lastPos = "", lastOri = "";
 
       function onCamMotion(evt) {
+        if (isInternalUpdate) return;
         if (!evt || !evt.position || !evt.orientation) return;
         const posStr = parsePosition(evt.position);
         const oriStr = parseOrientation(evt.orientation);
