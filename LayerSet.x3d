@@ -32,7 +32,7 @@
                 <Material DEF="TextMaterial" diffuseColor="0 1 0"/>
               </Appearance>
               <Text  string='"Hello, Layers" "" "Goodbye, World"'>
-                <FontStyle justify='"MIDDLE" "MIDDLE"'>
+                <FontStyle style="1.5" justify='"MIDDLE" "MIDDLE"'>
                 </FontStyle>
               </Text>
             </Shape>
