@@ -1,5 +1,5 @@
 # layers
-Experiments with Castle Model Viewer, X_ITE, Sunrize, X3DOM and LayerSet/Layer/Overlay Text/Proximity Sesnor.  Each has their own solution.
+Experiments with Castle Model Viewer, X_ITE, Sunrize, X3DOM and LayerSet/Layer/Overlay Text/Proximity Sensor.  Each has their own solution.
 
 Pull requests welcome.
 
@@ -10,7 +10,7 @@ npm ci
 ```
 
 ## To run
-The below will start an http server (on port 3000 or override in .env) and an https server (on port 3443 or override in .env) and create a certificate in process.env.CERT_DIR or ~/.x3d-dev-certs.  It will alwo present links to 127.0.0.1 (in case your localhost gets deleted from /etc/hosts) and file:// links.
+The below will start an http server (on port 3000 or override in .env) and an https server (on port 3443 or override in .env) and create a certificate in process.env.CERT_DIR or ~/.x3d-dev-certs.  It will also present links to 127.0.0.1 (in case your localhost gets deleted from /etc/hosts) and file:// links.
 To test, click a link you desire.  The https ones will warn about a self-signed certificate.  The file:// links should work without a server.
 ```
 npm start
