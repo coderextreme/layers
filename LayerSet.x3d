@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE X3D PUBLIC "ISO//Web3D//DTD X3D 4.0//EN" "https://www.web3d.org/specifications/x3d-4.0.dtd">
+<X3D profile='Immersive' version='4.0' xmlns:xsd='http://www.w3.org/2001/XMLSchema-instance' xsd:noNamespaceSchemaLocation='https://www.web3d.org/specifications/x3d-4.0.xsd'>
+  <head>
+    <component name="Grouping" level="1" />
+    <component name="Layering" level="1" />
+    <component name="Text" level="1" />
+    <meta name="title" content="LayerSet.x3d" />
+    <meta name="identifier" content="https://coderextreme.net/X3DJSONLD/src/main/data/LayerSet.x3d" />
+    <meta name="description" content="LayerSet with a 3D layer of a rotating box and a 2D layer of a Text string saying &quot; Hello, Layers&quot; and &quot;Goodbye, World&quot;" />
+    <meta name="created" content="10 October 2026" />
+    <meta name="creator" content="John Carlson" />
+  </head>
+  <Scene>
+    <LayerSet activeLayer="1" order="1, 2">
+      <Layer DEF="Model_Layer">
+        <Viewpoint description="Box View" position="0 0 7" />
+        <Transform translation="-2 0 0">
+          <Shape>
+            <Appearance>
+              <Material DEF="BoxMaterial" diffuseColor="1 0 0"/>
+            </Appearance>
+            <Box/>
+          </Shape>
+        </Transform>
+      </Layer>
+      <Layer  pickable="FALSE" pointerEvents="FALSE" DEF="Text_Layer">
+        <Viewpoint description="Text View" position="0 0 7" />
+          <Transform translation="2 0 0">
+            <Shape>
+              <Appearance>
+                <Material DEF="TextMaterial" diffuseColor="0 1 0"/>
+              </Appearance>
+              <Text  size="0.1" string='"Hello, Layers" "" "Goodbye, World"'>
+                <FontStyle justify='"MIDDLE" "MIDDLE"'>
+                </FontStyle>
+              </Text>
+            </Shape>
+          </Transform>
+        </Layer>
+    </LayerSet>
+  </Scene>
+</X3D>

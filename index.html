@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>I-Frame LayerSets</title>
+    <style>
+    	.iframe-container {
+            display: flex;
+            gap: 15px; /* Adds space between the iframes */
+            width: 100%;
+            height: 80vh; /* Sets height to 80% of the viewport height */
+        }
+        .iframe-container iframe {
+            flex: 1; /* Makes both iframes take up equal horizontal space */
+	    border: 1px;
+        }
+    </style>
+</head>
+<body>
+	  <div class="iframe-container">
+		  <iframe
+			  srcdoc="<html><head><meta charset=;utf-8'><script defer src='https://cdn.jsdelivr.net/npm/x_ite@16.6.0/dist/x_ite.min.js'></script></head><body><x3d-canvas  src='LayerSet.x3d'></x3d-canvas></body></html>" >
+					  
+		  </iframe>
+		  <iframe src="layerset.html"</iframe>
+	  </div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>X3DOM LayerSet</title>
+  <link rel="stylesheet" type="text/css" 
+          href="http://www.x3dom.org/x3dom/release/x3dom.css">
+  </link>
+  <script type="text/javascript" 
+            src="http://www.x3dom.org/x3dom/release/x3dom.js">
+  </script>
+  <style>
+.container {
+  position: relative; /* Establishes the boundary for the child */
+  height: 100vh;
+}
+
+.text-element {
+  position: absolute;
+  top: 23%;
+  left: 60%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  color: #00ff00;
+  pointer-events: none;
+}
+  </style>
+</head>
+<body>
+<div class="container">
+  <x3d 
+    profile='Immersive'
+    version='4.0'
+    xmlns:xsd='http://www.w3.org/2001/XMLSchema-instance'
+    xsd:noNamespaceSchemaLocation='https://www.web3d.org/specifications/x3d-4.0.xsd'>
+    <scene>
+      <transform translation="-2 0 0">
+        <shape sortKey="0">
+         <appearance>
+           <material DEF="BoxMaterial" diffuseColor="1 0 0"></material>
+         </appearance>
+         <box></box>
+	</shape>
+      </transform>
+    </scene>
+  </x3d>
+  <div class="text-element">
+    <span>Hello, Layers</span><br>
+    <span>&nbsp;</span><br>
+    <span>Goodbye, World</span>
+  </div>
+</div>
+</body>
+</html>
