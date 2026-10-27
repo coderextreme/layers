@@ -23,13 +23,13 @@
   <x3d-canvas splash-screen="false" context-menu="false">
     <X3D profile="Immersive" version="4.0">
       <Scene>
-        <Background skyColor="0.1 0.1 0.15"></Background>
-
+	<FontLibrary DEF="PTSans" family="PT Sans" url='"https://cdn.jsdelivr.net/npm/x_ite@latest/dist/assets/fonts/PT_Sans/PTSans-Regular.ttf"'></FontLibrary>
         <LayerSet activeLayer="1" order="1 2">
-          <!-- Layer 0: Base 3D Model (Box) -->
+          <!-- Layer 0: Base 3D Model -->
           <Layer DEF="Layer0">
-            <NavigationInfo type='"EXAMINE" "ANY"' headlight="true"></NavigationInfo>
-            <Viewpoint DEF="VP_XITE" position="0 0 8" description="MainVP"></Viewpoint>
+          <Background skyColor="0.1 0.1 0.15"></Background>
+          <NavigationInfo type='"EXAMINE" "ANY"' headlight="true"></NavigationInfo>
+          <Viewpoint DEF="VP_XITE" position="0 0 8" description="MainVP"></Viewpoint>
             
             <Transform DEF="BoxGeom" translation="0 0 0">
               <Shape>
@@ -40,25 +40,29 @@
               </Shape>
             </Transform>
           </Layer>
-
-          <!-- Layer 1: Foreground Layer (Rendered on top of Layer 0) -->
+          <!-- Layer 1: Foreground HUD Layer -->
           <Layer DEF="Layer1">
             <NavigationInfo headlight="true"></NavigationInfo>
             <Viewpoint DEF="VP_Layer1" position="0 0 8" description="Layer1VP"></Viewpoint>
-
-            <!-- Centered directly over the Box face -->
+        
             <Transform translation="0 0 0.8">
               <Shape>
                 <Appearance>
                   <Material diffuseColor="1 1 1" emissiveColor="1 1 1"></Material>
                 </Appearance>
                 <Text string='"Layer 1" "Overlay Text"' solid="false">
-                  <FontStyle family='"SANS"' justify='"MIDDLE" "MIDDLE"' size="0.45"></FontStyle>
+                  <!-- "PT Sans" first, with "SANS" fallback so it NEVER defaults to SERIF -->
+                  <FontStyle 
+                    family='"PT Sans" "SANS"' 
+                    style="PLAIN" 
+                    justify='"MIDDLE" "MIDDLE"' 
+                    size="0.45">
+                  </FontStyle>
                 </Text>
               </Shape>
             </Transform>
           </Layer>
-        </LayerSet>
+</LayerSet>
 
         <!-- Keep Layer1 camera strictly synchronized with Layer0 -->
         <ROUTE fromNode="VP_XITE" fromField="position_changed" toNode="VP_Layer1" toField="set_position"/>

@@ -12,32 +12,45 @@
     <meta name="creator" content="John Carlson" />
   </head>
   <Scene>
-    <LayerSet activeLayer="1" order="1, 2">
-      <Layer DEF="Model_Layer">
-        <Viewpoint description="Box View" position="0 0 7" />
-        <Transform translation="-2 0 0">
-          <Shape>
-            <Appearance>
-              <Material DEF="BoxMaterial" diffuseColor="1 0 0"/>
-            </Appearance>
-            <Box/>
-          </Shape>
-        </Transform>
-      </Layer>
-      <Layer  pickable="false" DEF="Text_Layer">
-        <Viewpoint description="Text View" position="0 0 7" />
-          <Transform translation="2 0 0">
-            <Shape>
-              <Appearance>
-                <Material DEF="TextMaterial" diffuseColor="0 1 0"/>
-              </Appearance>
-              <Text  string='"Hello, Layers" "" "Goodbye, World"'>
-                <FontStyle style="1.5" justify='"MIDDLE" "MIDDLE"'>
-                </FontStyle>
-              </Text>
-            </Shape>
-          </Transform>
-        </Layer>
-    </LayerSet>
+        <Background skyColor="0.1 0.1 0.15"></Background>
+
+        <LayerSet activeLayer="1" order="1 2">
+          <!-- Layer 0: Base 3D Model (Box) -->
+          <Layer DEF="Layer0">
+            <NavigationInfo type='"EXAMINE" "ANY"' headlight="true"></NavigationInfo>
+            <Viewpoint DEF="VP_XITE" position="0 0 8" description="MainVP"></Viewpoint>
+            
+            <Transform DEF="BoxGeom" translation="0 0 0">
+              <Shape>
+                <Appearance>
+                  <Material diffuseColor="0.2 0.7 0.9"></Material>
+                </Appearance>
+                <Box size="1.5 1.5 1.5"></Box>
+              </Shape>
+            </Transform>
+          </Layer>
+
+          <!-- Layer 1: Foreground Layer (Rendered on top of Layer 0) -->
+          <Layer DEF="Layer1">
+            <NavigationInfo headlight="true"></NavigationInfo>
+            <Viewpoint DEF="VP_Layer1" position="0 0 8" description="Layer1VP"></Viewpoint>
+
+            <!-- Centered directly over the Box face -->
+            <Transform translation="0 0 0.8">
+              <Shape>
+                <Appearance>
+                  <Material diffuseColor="1 1 1" emissiveColor="1 1 1"></Material>
+                </Appearance>
+                <Text string='"Layer 1" "Overlay Text"' solid="false">
+                  <FontStyle family='"SANS"' justify='"MIDDLE" "MIDDLE"' size="0.45"></FontStyle>
+                </Text>
+              </Shape>
+            </Transform>
+          </Layer>
+        </LayerSet>
+
+        <!-- Keep Layer1 camera strictly synchronized with Layer0 -->
+        <ROUTE fromNode="VP_XITE" fromField="position_changed" toNode="VP_Layer1" toField="set_position"/>
+        <ROUTE fromNode="VP_XITE" fromField="orientation_changed" toNode="VP_Layer1" toField="set_orientation"/>
   </Scene>
 </X3D>

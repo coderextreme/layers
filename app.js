@@ -82,5 +82,6 @@ const server = http.createServer(app);
 server.listen(port, '127.0.0.1', function () {
   console.log('Example app listening on port', port, "!");
   console.log("Go to http://127.0.0.1:"+port+"/index.html");
-  console.log("Go to http://127.0.0.1:"+port+"/layerset.html");
+  console.log("Go to http://127.0.0.1:"+port+"/x3dom.html");
+  console.log("Go to http://127.0.0.1:"+port+"/x_ite.html");
 });
