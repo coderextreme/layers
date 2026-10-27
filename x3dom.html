@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>X3DOM View</title>
+  <link rel="stylesheet" href="https://www.x3dom.org/download/dev/x3dom.css">
+  <script src="https://www.x3dom.org/download/dev/x3dom.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+    x3d {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <x3d id="x3domCanvas" showStat="false" showLog="false">
+    <scene>
+      <background skyColor="0.1 0.1 0.15"></background>
+      <navigationInfo type='"EXAMINE" "ANY"' headlight="true"></navigationInfo>
+      <viewpoint id="VP_X3DOM" position="0 0 8" description="MainVP"></viewpoint>
+
+      <!-- Normalized Layer 0: Box -->
+      <group id="EmulatedLayer0">
+        <transform DEF="BoxGeom" translation="0 0 0">
+          <shape>
+            <appearance>
+              <material diffuseColor="0.2 0.7 0.9"></material>
+            </appearance>
+            <box size="1.5 1.5 1.5"></box>
+          </shape>
+        </transform>
+      </group>
+
+      <!-- Normalized Layer 1: Text positioned identically on top of Box -->
+      <group id="EmulatedLayer1">
+        <transform translation="0 0 0.8">
+          <shape>
+            <appearance>
+              <material diffuseColor="1 1 1" emissiveColor="1 1 1"></material>
+            </appearance>
+            <text string='"Layer 1" "Overlay Text"' solid="false">
+              <fontStyle family='"SANS"' justify='"MIDDLE" "MIDDLE"' size="0.45"></fontStyle>
+            </text>
+          </shape>
+        </transform>
+      </group>
+    </scene>
+  </x3d>
+
+  <script>
+    // Camera sync listener from parent window
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.type === "VIEWPOINT_UPDATE") {
+        const vp = document.getElementById("VP_X3DOM");
+        if (vp) {
+          vp.setAttribute("position", e.data.position);
+          vp.setAttribute("orientation", e.data.orientation);
+        }
+      }
+    });
+
+    // Broadcast camera motion when manipulated in X3DOM
+    document.addEventListener("DOMContentLoaded", () => {
+      const canvas = document.getElementById("x3domCanvas");
+      if (canvas) {
+        canvas.addEventListener("viewpointChanged", (evt) => {
+          window.parent.postMessage({
+            type: "VIEWPOINT_UPDATE",
+            position: `${evt.position.x} ${evt.position.y} ${evt.position.z}`,
+            orientation: `${evt.orientation[0]} ${evt.orientation[1]} ${evt.orientation[2]} ${evt.orientation[3]}`
+          }, "*");
+        });
+      }
+    });
+  </script>
+</body>
+</html>

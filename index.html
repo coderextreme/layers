@@ -1,27 +1,89 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>I-Frame LayerSets</title>
-    <style>
-    	.iframe-container {
-            display: flex;
-            gap: 15px; /* Adds space between the iframes */
-            width: 100%;
-            height: 80vh; /* Sets height to 80% of the viewport height */
-        }
-        .iframe-container iframe {
-            flex: 1; /* Makes both iframes take up equal horizontal space */
-	    border: 2px;
-        }
-    </style>
+  <meta charset="utf-8">
+  <title>X3D Layers Comparison: X_ITE vs X3DOM</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #1e1e1e;
+      font-family: sans-serif;
+      color: #fff;
+    }
+    header {
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #2d2d2d;
+    }
+    .container {
+      display: flex;
+      flex: 1;
+      gap: 4px;
+      background: #111;
+    }
+    .pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .pane h3 {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      margin: 0;
+      padding: 4px 8px;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
 </head>
 <body>
-	  <div class="iframe-container">
-		  <iframe
-			  srcdoc="<html><head><meta charset=;utf-8'><script defer src='https://cdn.jsdelivr.net/npm/x_ite@16.6.0/dist/x_ite.min.js'></script></head><body><x3d-canvas  src='LayerSet.x3d'></x3d-canvas></body></html>" >
-					  
-		  </iframe>
-		  <iframe src="layerset.html"></iframe>
-	  </div>
+  <header>
+    <span>Dual Viewer: X_ITE (Left) vs X3DOM (Right)</span>
+    <label><input type="checkbox" id="syncCam" checked> Synchronize Viewpoints</label>
+  </header>
+  <div class="container">
+    <div class="pane">
+      <h3>X_ITE</h3>
+      <iframe id="iframeXite" src="x_ite.html"></iframe>
+    </div>
+    <div class="pane">
+      <h3>X3DOM</h3>
+      <iframe id="iframeX3dom" src="x3dom.html"></iframe>
+    </div>
+  </div>
+
+  <script>
+    const iframeXite = document.getElementById('iframeXite');
+    const iframeX3dom = document.getElementById('iframeX3dom');
+    const syncCheckbox = document.getElementById('syncCam');
+
+    window.addEventListener('message', (event) => {
+      if (!syncCheckbox.checked) return;
+
+      // Broadcast viewpoint updates between frames
+      if (event.data && event.data.type === 'VIEWPOINT_UPDATE') {
+        if (event.source === iframeXite.contentWindow) {
+          iframeX3dom.contentWindow.postMessage(event.data, '*');
+        } else if (event.source === iframeX3dom.contentWindow) {
+          iframeXite.contentWindow.postMessage(event.data, '*');
+        }
+      }
+    });
+  </script>
 </body>
 </html>

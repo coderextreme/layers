@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>X_ITE View</title>
+  <script src="https://cdn.jsdelivr.net/npm/x_ite@latest/dist/x_ite.min.js"></script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+    x3d-canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <x3d-canvas splash-screen="false" context-menu="false">
+    <X3D profile="Immersive" version="4.0">
+      <Scene>
+        <Background skyColor="0.1 0.1 0.15"></Background>
+
+        <LayerSet activeLayer="1" order="1 2">
+          <!-- Layer 0: Base 3D Model (Box) -->
+          <Layer DEF="Layer0">
+            <NavigationInfo type='"EXAMINE" "ANY"' headlight="true"></NavigationInfo>
+            <Viewpoint DEF="VP_XITE" position="0 0 8" description="MainVP"></Viewpoint>
+            
+            <Transform DEF="BoxGeom" translation="0 0 0">
+              <Shape>
+                <Appearance>
+                  <Material diffuseColor="0.2 0.7 0.9"></Material>
+                </Appearance>
+                <Box size="1.5 1.5 1.5"></Box>
+              </Shape>
+            </Transform>
+          </Layer>
+
+          <!-- Layer 1: Foreground Layer (Rendered on top of Layer 0) -->
+          <Layer DEF="Layer1">
+            <NavigationInfo headlight="true"></NavigationInfo>
+            <Viewpoint DEF="VP_Layer1" position="0 0 8" description="Layer1VP"></Viewpoint>
+
+            <!-- Centered directly over the Box face -->
+            <Transform translation="0 0 0.8">
+              <Shape>
+                <Appearance>
+                  <Material diffuseColor="1 1 1" emissiveColor="1 1 1"></Material>
+                </Appearance>
+                <Text string='"Layer 1" "Overlay Text"' solid="false">
+                  <FontStyle family='"SANS"' justify='"MIDDLE" "MIDDLE"' size="0.45"></FontStyle>
+                </Text>
+              </Shape>
+            </Transform>
+          </Layer>
+        </LayerSet>
+
+        <!-- Keep Layer1 camera strictly synchronized with Layer0 -->
+        <ROUTE fromNode="VP_XITE" fromField="position_changed" toNode="VP_Layer1" toField="set_position"/>
+        <ROUTE fromNode="VP_XITE" fromField="orientation_changed" toNode="VP_Layer1" toField="set_orientation"/>
+      </Scene>
+    </X3D>
+  </x3d-canvas>
+
+  <script>
+    // Synchronize viewpoint updates with parent window
+    X3D((browser) => {
+      const vp = browser.currentScene.getNamedNode("VP_XITE");
+      if (vp) {
+        vp.addFieldCallback("position", () => {
+          window.parent.postMessage({
+            type: "VIEWPOINT_UPDATE",
+            position: vp.position.toString(),
+            orientation: vp.orientation.toString()
+          }, "*");
+        });
+      }
+    });
+
+    // Listen for camera updates from x3dom.html via parent window
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.type === "VIEWPOINT_UPDATE") {
+        const browser = X3D.getBrowser();
+        const vp0 = browser?.currentScene?.getNamedNode("VP_XITE");
+        const vp1 = browser?.currentScene?.getNamedNode("VP_Layer1");
+        if (vp0) {
+          const pos = new X3D.SFVec3f(...e.data.position.split(" ").map(Number));
+          const ori = new X3D.SFRotation(...e.data.orientation.split(" ").map(Number));
+          vp0.position = pos;
+          vp0.orientation = ori;
+          if (vp1) {
+            vp1.position = pos;
+            vp1.orientation = ori;
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>
