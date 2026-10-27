@@ -15,7 +15,7 @@ const __dirname = dirname(__filename);
 var app = express();
 
 
-app.use(express.static('/'));
+app.use(express.static(__dirname));
 
 function send(res, data, type, next, outfile) {
 	sendNoNext(res, data, type, outfile);
