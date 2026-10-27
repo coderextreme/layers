@@ -84,4 +84,7 @@ server.listen(port, '127.0.0.1', function () {
   console.log("Go to http://127.0.0.1:"+port+"/index.html");
   console.log("Go to http://127.0.0.1:"+port+"/x3dom.html");
   console.log("Go to http://127.0.0.1:"+port+"/x_ite.html");
+  console.log("Go to file://"+process.env.HOME+"/layers/index.html");
+  console.log("Go to file://"+process.env.HOME+"/layers/x3dom.html");
+  console.log("Go to file://"+process.env.HOME+"/layers/x_ite.html");
 });
