@@ -1,5 +1,5 @@
-# layersA
-Experiments with X_ITE, X3D, X3DOM and LayerSet/Layer/Overlay Text
+# layers
+Experiments with Castle Model Viewer, X_ITE, Sunrize, X3DOM and LayerSet/Layer/Overlay Text/Proximity Sesnor.  Each has their own solution.
 
 Pull requests welcome.
 
