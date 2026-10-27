@@ -23,7 +23,6 @@ function send(res, data, type, next, outfile) {
 }
 
 function sendNoNext(res, data, type, outfile) {
-	// console.error("Type", type);
 	try {
 		if (!type.startsWith("image/")) {
 			res.header("Content-Type", type);

@@ -22,8 +22,8 @@
 
 .text-element {
   position: absolute;
-  top: 23%;
-  left: 60%;
+  top: 25%;
+  left: 52%;
   transform: translate(-50%, -50%);
   font-size: 28px;
   color: #00ff00;
@@ -49,11 +49,26 @@
       </transform>
     </scene>
   </x3d>
-  <div class="text-element">
-    <span>Hello, Layers</span><br>
-    <span>&nbsp;</span><br>
-    <span>Goodbye, World</span>
-  </div>
+  <x3d 
+    class="text-element"
+    profile='Immersive'
+    version='4.0'
+    xmlns:xsd='http://www.w3.org/2001/XMLSchema-instance'
+    xsd:noNamespaceSchemaLocation='https://www.web3d.org/specifications/x3d-4.0.xsd'>
+    <scene>
+          <transform translation="2 0 0">
+            <shape>
+              <appearance>
+	      <material DEF="TextMaterial" diffuseColor="0 1 0"></material>
+              </appearance>
+              <text string='"Hello, Layers" "" "Goodbye, World"'>
+                <fontStyle size="1.5" justify='"MIDDLE" "MIDDLE"'>
+                </fontStyle>
+              </text>
+            </shape>
+          </transform>
+    </scene>
+  </x3d>
 </div>
 </body>
 </html>
