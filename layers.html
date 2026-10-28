@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>X3D Layers Comparison: X_ITE vs X3DOM</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: #1e1e1e;
+      font-family: sans-serif;
+      color: #fff;
+    }
+    header {
+      padding: 8px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #2d2d2d;
+    }
+    .container {
+      display: flex;
+      flex: 1;
+      gap: 4px;
+      background: #111;
+    }
+    .pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .pane h3 {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 10;
+      margin: 0;
+      padding: 4px 8px;
+      background: rgba(0, 0, 0, 0.6);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span>Dual Viewer: X_ITE (Left) vs X3DOM (Right)</span>
+    <label><input type="checkbox" id="syncCam" checked> Synchronize Viewpoints</label>
+  </header>
+  <div class="container">
+    <div class="pane">
+      <h3>X_ITE</h3>
+      <iframe id="iframeXite"></iframe>
+    </div>
+    <div class="pane">
+      <h3>X3DOM</h3>
+      <iframe id="iframeX3dom"></iframe>
+    </div>
+  </div>
+
+  <script>
+    // 1. X_ITE Source: Single <x3d-canvas> using LayerSet with "EAT FOOD"
+    const xiteSource = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/x_ite@latest/dist/x_ite.min.js"><\/script>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+    x3d-canvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <x3d-canvas splash-screen="false" context-menu="false">
+    <X3D profile="Immersive" version="4.0">
+      <Scene>
+        <LayerSet activeLayer="1" order="1 2">
+          <!-- Layer 0: Base 3D Model -->
+          <Layer DEF="Layer0">
+            <Background skyColor="0.1 0.1 0.15"></Background>
+            <NavigationInfo type='"EXAMINE" "ANY"' headlight="true"></NavigationInfo>
+            <Viewpoint DEF="VP_XITE" position="0 0 8" description="MainVP"></Viewpoint>
+            
+            <Transform DEF="BoxGeom" translation="0 0 0">
+              <Shape>
+                <Appearance><Material diffuseColor="0.2 0.7 0.9"></Material></Appearance>
+                <Box size="1.5 1.5 1.5"></Box>
+              </Shape>
+            </Transform>
+          </Layer>
+
+          <!-- Layer 1: Foreground HUD Layer (EAT FOOD) -->
+          <Layer DEF="Layer1">
+            <NavigationInfo headlight="true" type='"NONE"'></NavigationInfo>
+            <Viewpoint DEF="VP_Layer1" position="0 0 8" description="Layer1VP"></Viewpoint>
+        
+            <Transform translation="0 0 0.8">
+              <Shape>
+                <Appearance><Material diffuseColor="1 1 1" emissiveColor="1 1 1"></Material></Appearance>
+                <Text string='"EAT FOOD"' solid="false">
+                  <FontStyle family='"SANS"' style="PLAIN" spacing="0.95" justify='"MIDDLE" "MIDDLE"' size="0.45"></FontStyle>
+                </Text>
+              </Shape>
+            </Transform>
+          </Layer>
+        </LayerSet>
+      </Scene>
+    </X3D>
+  </x3d-canvas>
+
+  <script>
+    let isInternalUpdate = false;
+    X3D((browser) => {
+      const vp = browser.currentScene.getNamedNode("VP_XITE");
+      if (vp) {
+        const sendUpdate = () => {
+          if (isInternalUpdate) return;
+          window.parent.postMessage({
+            type: "VIEWPOINT_UPDATE",
+            position: vp.position.toString(),
+            orientation: vp.orientation.toString()
+          }, "*");
+        };
+        vp.addFieldCallback("position", sendUpdate);
+        vp.addFieldCallback("orientation", sendUpdate);
+      }
+    });
+
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.type === "VIEWPOINT_UPDATE") {
+        const browser = X3D.getBrowser();
+        const vp0 = browser?.currentScene?.getNamedNode("VP_XITE");
+        if (vp0) {
+          isInternalUpdate = true;
+          const pos = new X3D.SFVec3f(...e.data.position.split(" ").map(Number));
+          const ori = new X3D.SFRotation(...e.data.orientation.split(" ").map(Number));
+          vp0.position = pos;
+          vp0.orientation = ori;
+          requestAnimationFrame(() => { isInternalUpdate = false; });
+        }
+      }
+    });
+  <\/script>
+</body>
+</html>`;
+
+    // 2. X3DOM Source: Composited Canvases with "EAT FOOD"
+    const x3domSource = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="https://andreasplesch.github.io/x3dom/dist/x3dom.css">
+  <script src="https://andreasplesch.github.io/x3dom/dist/x3dom-full.debug.js"><\/script>
+  <script>
+    (function() {
+      const origFill = CanvasRenderingContext2D.prototype.fillText;
+      CanvasRenderingContext2D.prototype.fillText = function(text, x, y, maxW) {
+        const match = /(\\d+(?:\\.\\d+)?)px/.exec(this.font);
+        const fs = match ? parseFloat(match[1]) : 32;
+        this.save();
+        this.font = 'normal ' + fs + 'px sans-serif';
+        this.lineWidth = fs * 0.025;
+        this.strokeStyle = this.fillStyle;
+        this.lineJoin = 'miter';
+        this.miterLimit = 2;
+        if (maxW !== undefined) {
+          this.strokeText(text, x, y, maxW);
+          origFill.call(this, text, x, y, maxW);
+        } else {
+          this.strokeText(text, x, y);
+          origFill.call(this, text, x, y);
+        }
+        this.restore();
+      };
+    })();
+  <\/script>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #000; }
+    .container { position: relative; width: 100%; height: 100%; }
+    #x3dLayer0 { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; border: none; }
+    #x3dLayer1 { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; border: none; background: transparent !important; pointer-events: none; }
+    #x3dLayer1 canvas { background: transparent !important; pointer-events: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <x3d id="x3dLayer0" showStat="false" showLog="false">
+      <scene>
+        <environment gammaCorrectionDefault="none"></environment>
+        <background skyColor="0.1 0.1 0.15"></background>
+        <navigationInfo type='"EXAMINE" "ANY"' headlight="true"></navigationInfo>
+        <viewpoint id="VP_X3DOM" position="0 0 8" description="MainVP"></viewpoint>
+        
+        <transform DEF="BoxGeom" translation="0 0 0">
+          <shape>
+            <appearance><material diffuseColor="0.2 0.7 0.9"></material></appearance>
+            <box size="1.5 1.5 1.5"></box>
+          </shape>
+        </transform>
+      </scene>
+    </x3d>
+
+    <x3d id="x3dLayer1" showStat="false" showLog="false">
+      <scene>
+        <environment gammaCorrectionDefault="none"></environment>
+        <navigationInfo type='"NONE"' headlight="true"></navigationInfo>
+        <viewpoint position="0 0 8" description="HUD_VP"></viewpoint>
+        <transform translation="0 0.05 0.8">
+          <shape>
+            <appearance><material diffuseColor="1 1 1" emissiveColor="1 1 1"></material></appearance>
+            <text id="hudText" string='"EAT FOOD"' solid="false">
+              <fontStyle family='"SANS"' style="PLAIN" quality="2" spacing="0.94" justify='"MIDDLE" "MIDDLE"' size="0.45"></fontStyle>
+            </text>
+          </shape>
+        </transform>
+      </scene>
+    </x3d>
+  </div>
+  <script>
+    function parseOrientation(ori) {
+      if (typeof ori === "string") return ori;
+      if (Array.isArray(ori)) {
+        if (ori[0] && typeof ori[0] === "object" && "x" in ori[0]) {
+          return ori[0].x + " " + ori[0].y + " " + ori[0].z + " " + ori[1];
+        }
+        if (ori.length === 4) return ori.join(" ");
+      }
+      return "0 0 1 0";
+    }
+
+    function parsePosition(pos) {
+      if (typeof pos === "string") return pos;
+      if (pos && typeof pos === "object" && "x" in pos) {
+        return pos.x + " " + pos.y + " " + pos.z;
+      }
+      if (Array.isArray(pos)) return pos.join(" ");
+      return "0 0 8";
+    }
+
+    let isInternalUpdate = false;
+    window.addEventListener("message", (e) => {
+      if (e.data && e.data.type === "VIEWPOINT_UPDATE") {
+        const vp = document.getElementById("VP_X3DOM");
+        if (vp) {
+          isInternalUpdate = true;
+          vp.setAttribute("position", e.data.position);
+          vp.setAttribute("orientation", e.data.orientation);
+          requestAnimationFrame(() => { isInternalUpdate = false; });
+        }
+      }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const canvas0 = document.getElementById("x3dLayer0");
+      const vp = document.getElementById("VP_X3DOM");
+      let lastPos = "", lastOri = "";
+
+      function onCamMotion(evt) {
+        if (isInternalUpdate) return;
+        if (!evt || !evt.position || !evt.orientation) return;
+        const posStr = parsePosition(evt.position);
+        const oriStr = parseOrientation(evt.orientation);
+        if (posStr === lastPos && oriStr === lastOri) return;
+        lastPos = posStr;
+        lastOri = oriStr;
+        window.parent.postMessage({
+          type: "VIEWPOINT_UPDATE",
+          position: posStr,
+          orientation: oriStr
+        }, "*");
+      }
+
+      if (canvas0) canvas0.addEventListener("viewpointChanged", onCamMotion);
+      if (vp) vp.addEventListener("viewpointChanged", onCamMotion);
+    });
+  <\/script>
+</body>
+</html>`;
+
+    // Populate isolated iframes
+    document.getElementById('iframeXite').srcdoc = xiteSource;
+    document.getElementById('iframeX3dom').srcdoc = x3domSource;
+
+    // Viewpoint synchronizer
+    const syncCheckbox = document.getElementById('syncCam');
+    window.addEventListener('message', (event) => {
+      if (!syncCheckbox.checked) return;
+      if (event.data && event.data.type === 'VIEWPOINT_UPDATE') {
+        if (event.source === iframeXite.contentWindow) {
+          iframeX3dom.contentWindow.postMessage(event.data, '*');
+        } else if (event.source === iframeX3dom.contentWindow) {
+          iframeXite.contentWindow.postMessage(event.data, '*');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

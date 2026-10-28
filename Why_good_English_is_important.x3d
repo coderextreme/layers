@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE X3D PUBLIC "ISO//Web3D//DTD X3D 4.0//EN" "https://www.web3d.org/specifications/x3d-4.0.dtd">
+<X3D profile="Immersive" version="4.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema-instance" xsd:noNamespaceSchemaLocation="https://www.web3d.org/specifications/x3d-4.0.xsd">
+  <head>
+    <component name="Layering" level="1"/>
+    <component name="EnvironmentalSensor" level="1"/>
+  </head>
+  <Scene>
+    <!-- ============================================================== -->
+    <!-- 1. FOR SUNRIZE / X_ITE: LayerSet with text centered over box   -->
+    <!-- ============================================================== -->
+    <LayerSet activeLayer="1" order="1 2">
+      <!-- Layer 0: Navigable 3D Scene -->
+      <Layer DEF="Layer0">
+        <Background skyColor="0.1 0.1 0.15"/>
+        <NavigationInfo type='"EXAMINE" "ANY"' headlight="true"/>
+        <Viewpoint DEF="VP_XITE" position="0 0 8" description="MainVP"/>
+        
+        <Transform DEF="BoxGeom" translation="0 0 0">
+          <!-- 3D Box -->
+          <Shape>
+            <Appearance>
+              <Material diffuseColor="0.2 0.7 0.9"/>
+            </Appearance>
+            <Box size="1.5 1.5 1.5"/>
+          </Shape>
+
+          <!-- Text centered directly over the box in 3D space -->
+          <Transform translation="0 1.25 0">
+            <Shape>
+              <Appearance>
+                <Material diffuseColor="1 1 1" emissiveColor="1 1 1"/>
+              </Appearance>
+              <Text string='"Text Over Box"' solid="false">
+                <FontStyle family='"Arial" "Helvetica" "SANS"' style="PLAIN" spacing="0.95" justify='"MIDDLE" "MIDDLE"' size="0.4"/>
+              </Text>
+            </Shape>
+          </Transform>
+        </Transform>
+      </Layer>
+
+      <!-- Layer 1: Foreground HUD Layer (Steady Screen Overlay) -->
+      <Layer DEF="Layer1">
+        <NavigationInfo headlight="true" type='"NONE"'/>
+        <Viewpoint DEF="VP_Layer1" position="0 0 8" description="Layer1VP"/>
+    
+        <Transform translation="0 2.2 0.8">
+          <Shape>
+            <Appearance>
+              <Material diffuseColor="1 1 1" emissiveColor="1 1 1"/>
+            </Appearance>
+            <Text string='"Layer 1" "Overlay Text"' solid="false">
+              <FontStyle family='"Arial" "Helvetica" "SANS"' style="PLAIN" spacing="0.95" justify='"MIDDLE" "MIDDLE"' size="0.45"/>
+            </Text>
+          </Shape>
+        </Transform>
+      </Layer>
+    </LayerSet>
+
+    <!-- ============================================================== -->
+    <!-- 2. FOR CASTLE MODEL VIEWER: Root nodes (LayerSet is skipped)    -->
+    <!-- HUD text is kept directly in front of lens so it's always on top -->
+    <!-- ============================================================== -->
+    <Background skyColor="0.1 0.1 0.15"/>
+    <NavigationInfo type='"EXAMINE" "ANY"' headlight="true" avatarSize="0.05 1.6 0.75"/>
+    <Viewpoint DEF="VP_Castle" position="0 0 8" description="MainVP"/>
+
+    <!-- Navigable 3D Box with text centered over it -->
+    <Transform translation="0 0 0">
+      <Shape>
+        <Appearance>
+          <Material diffuseColor="0.2 0.7 0.9"/>
+        </Appearance>
+        <Box size="1.5 1.5 1.5"/>
+      </Shape>
+
+      <!-- Text centered over the box in Castle Model Viewer -->
+      <Transform translation="0 1.25 0">
+        <Shape>
+          <Appearance>
+            <Material diffuseColor="1 1 1" emissiveColor="1 1 1"/>
+          </Appearance>
+          <Text string='"Text Over Box"' solid="false">
+            <FontStyle family='"Arial" "Helvetica" "SANS"' style="PLAIN" spacing="0.95" justify='"MIDDLE" "MIDDLE"' size="0.4"/>
+          </Text>
+        </Shape>
+      </Transform>
+    </Transform>
+
+    <!-- Camera tracker: Keeps HUD text 0.2 units from the lens (always on top) -->
+    <ProximitySensor DEF="CastleSensor" size="1000000 1000000 1000000"/>
+    <Transform DEF="CastleHUD">
+      <Transform translation="0 0.055 -0.2" scale="0.025 0.025 0.025">
+        <Shape>
+          <Appearance>
+            <Material diffuseColor="1 1 1" emissiveColor="1 1 0.2"/>
+          </Appearance>
+          <Text string='"Layer 1" "Overlay Text"' solid="false">
+            <FontStyle family='"Arial" "Helvetica" "SANS"' style="PLAIN" spacing="0.95" justify='"MIDDLE" "MIDDLE"' size="0.45"/>
+          </Text>
+        </Shape>
+      </Transform>
+    </Transform>
+
+    <ROUTE fromNode="CastleSensor" fromField="position_changed" toNode="CastleHUD" toField="translation"/>
+    <ROUTE fromNode="CastleSensor" fromField="orientation_changed" toNode="CastleHUD" toField="rotation"/>
+  </Scene>
+</X3D>

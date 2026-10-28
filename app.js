@@ -116,9 +116,11 @@ const server = http.createServer(app);
 server.listen(port, '127.0.0.1', function () {
   console.log('Example app listening on port', port, "!");
   console.log("Go to http://127.0.0.1:"+port+"/index.html");
+  console.log("Go to http://127.0.0.1:"+port+"/layers.html");
   console.log("Go to http://127.0.0.1:"+port+"/x3dom.html");
   console.log("Go to http://127.0.0.1:"+port+"/x_ite.html");
   console.log("Go to file://"+process.env.HOME+"/layers/index.html");
+  console.log("Go to file://"+process.env.HOME+"/layers/layers.html");
   console.log("Go to file://"+process.env.HOME+"/layers/x3dom.html");
   console.log("Go to file://"+process.env.HOME+"/layers/x_ite.html");
 });
@@ -133,6 +135,7 @@ if (ensureSelfSignedCert()) {
 	secureServer.listen(httpsPort, '127.0.0.1', function () {
 		console.log('HTTPS app listening on port', httpsPort, "!");
 		console.log("Go to https://127.0.0.1:"+httpsPort+"/index.html");
+		console.log("Go to https://127.0.0.1:"+httpsPort+"/layers.html");
 		console.log("Go to https://127.0.0.1:"+httpsPort+"/x3dom.html");
 		console.log("Go to https://127.0.0.1:"+httpsPort+"/x_ite.html");
 		console.log("(Your browser will warn about the self-signed certificate; that's expected.)");
