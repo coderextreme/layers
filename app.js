@@ -35,8 +35,8 @@ function ensureSelfSignedCert() {
 			"-keyout", keyFile,
 			"-out", certFile,
 			"-days", "365",
-			"-subj", "/CN=localhost",
-			"-addext", "subjectAltName=DNS:localhost,IP:127.0.0.1"
+			"-subj", "/CN=127.0.0.1",
+			"-addext", "subjectAltName=DNS:127.0.0.1,IP:127.0.0.1"
 		], {
 			stdio: "inherit",
 			// keep MSYS2 from mangling the "/CN=..." argument
